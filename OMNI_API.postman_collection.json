@@ -1,0 +1,217 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789abc",
+		"name": "OMNI API - Sistema de Transações",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Cadastrar Usuário",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has id field\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"joao\",\n  \"password\": \"123456\",\n  \"birthdate\": \"1990-01-01\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users/signup",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"signup"
+					]
+				},
+				"description": "Cadastra um novo usuário no sistema"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has token\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('token');",
+							"    pm.expect(jsonData).to.have.property('expiresIn');",
+							"    ",
+							"    // Salva o token para usar nas próximas requisições",
+							"    pm.collectionVariables.set('token', jsonData.token);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"joao\",\n  \"password\": \"123456\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users/signin",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"signin"
+					]
+				},
+				"description": "Autentica o usuário e obtém um token JWT"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Listar Usuários",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Users have required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.length > 0) {",
+							"        pm.expect(jsonData[0]).to.have.property('id');",
+							"        pm.expect(jsonData[0]).to.have.property('username');",
+							"        pm.expect(jsonData[0]).to.have.property('balance');",
+							"        pm.expect(jsonData[0]).to.not.have.property('password');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "Lista todos os usuários cadastrados no sistema"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Transferir Dinheiro",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							"pm.test(\"Response body is empty\", function () {",
+							"    pm.expect(pm.response.text()).to.be.empty;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"fromId\": \"ID_DO_USUARIO_REMETENTE\",\n  \"toId\": \"ID_DO_USUARIO_DESTINATARIO\",\n  \"amount\": 50\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/transfer",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"transfer"
+					]
+				},
+				"description": "Realiza uma transferência entre usuários"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+} 
